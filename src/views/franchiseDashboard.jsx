@@ -31,6 +31,8 @@ export default function FranchiseDashboard({ user }) {
     return whyFranchise();
   }
 
+  console.log('franchise', franchise);
+
   return (
     <View title={franchise.name}>
       <div className='text-neutral-100'>Everything you need to run an JWT Pizza franchise. Your gateway to success.</div>
