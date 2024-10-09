@@ -1,6 +1,6 @@
 import { test, expect } from "playwright-test-coverage";
 
-test("purchase with login", async ({ page }) => {
+test("manage a franchise", async ({ page }) => {
   await page.route("*/**/api/order/menu", async (route) => {
     const menuRes = [
       {
@@ -35,6 +35,22 @@ test("purchase with login", async ({ page }) => {
       },
       { id: 3, name: "PizzaCorp", stores: [{ id: 7, name: "Spanish Fork" }] },
       { id: 4, name: "topSpot", stores: [] },
+    ];
+    expect(route.request().method()).toBe("GET");
+    await route.fulfill({ json: franchiseRes });
+  });
+
+  await page.route("*/**/api/franchise/3", async (route) => {
+    const franchiseRes = [
+      {
+        id: 2,
+        name: "LotaPizza",
+        stores: [
+          { id: 4, name: "Lehi", totalRevenue: 100 },
+          { id: 5, name: "Springville", totalRevenue: 50 },
+          { id: 6, name: "American Fork", totalRevenue: 150 },
+        ],
+      },
     ];
     expect(route.request().method()).toBe("GET");
     await route.fulfill({ json: franchiseRes });
@@ -82,18 +98,7 @@ test("purchase with login", async ({ page }) => {
     await route.fulfill({ json: orderRes });
   });
 
-  await page.goto("/");
-
-  // Go to order page
-  await page.getByRole("button", { name: "Order now" }).click();
-
-  // Create order
-  await expect(page.locator("h2")).toContainText("Awesome is a click away");
-  await page.getByRole("combobox").selectOption("4");
-  await page.getByRole("link", { name: "Image Description Veggie A" }).click();
-  await page.getByRole("link", { name: "Image Description Pepperoni" }).click();
-  await expect(page.locator("form")).toContainText("Selected pizzas: 2");
-  await page.getByRole("button", { name: "Checkout" }).click();
+  await page.goto("/login");
 
   // Login
   await page.getByPlaceholder("Email address").click();
@@ -102,15 +107,19 @@ test("purchase with login", async ({ page }) => {
   await page.getByPlaceholder("Password").fill("a");
   await page.getByRole("button", { name: "Login" }).click();
 
-  // Pay
+  // Go to franchise page
+  await page.getByRole("link", { name: "Franchise" }).first().click();
   await expect(page.getByRole("main")).toContainText(
-    "Send me those 2 pizzas right now!"
+    "Everything you need to run an JWT Pizza franchise."
   );
-  await expect(page.locator("tbody")).toContainText("Veggie");
-  await expect(page.locator("tbody")).toContainText("Pepperoni");
-  await expect(page.locator("tfoot")).toContainText("0.008 ₿");
-  await page.getByRole("button", { name: "Pay now" }).click();
 
-  // Check balance
-  await expect(page.getByText("0.008")).toBeVisible();
+  // Create a store
+  await page.getByRole('button', { name: 'Create store' }).click();
+
+  // Delete a store
+  await page.getByRole("link", { name: "Franchise" }).first().click();
+  await page
+    .getByRole("row", { name: "Lehi 100 ₿ Close" })
+    .getByRole("button")
+    .click();
 });
