@@ -15,12 +15,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup node
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version-file: package.json
+          cache-dependency-path: pnpm-lock.yaml
+          cache: pnpm
 
-      - name: set version
+      - name: Set version
         id: set_version
         run: |
           version=$(date +'%Y%m%d.%H%M%S')
@@ -29,12 +34,13 @@ jobs:
 
       - name: Build
         run: |
-          npm ci && npm run build
+          pnpm install --frozen-lockfile
+          pnpm run build
 
       - name: Run tests
         run: |
-          npx playwright install --with-deps chromium
-          npm run test:coverage
+          pnpm exec playwright install --with-deps chromium
+          pnpm run test:coverage
 
       - name: Update coverage
         run: |
@@ -52,7 +58,9 @@ jobs:
         with:
           name: package
           path: dist/
+
   deploy:
+    name: Deploy
     needs: build
     permissions:
       id-token: write
