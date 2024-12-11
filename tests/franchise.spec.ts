@@ -114,7 +114,7 @@ test("manage a franchise", async ({ page }) => {
   );
 
   // Create a store
-  await page.getByRole('button', { name: 'Create store' }).click();
+  await page.getByRole("button", { name: "Create store" }).click();
 
   // Delete a store
   await page.getByRole("link", { name: "Franchise" }).first().click();
